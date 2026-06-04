@@ -11,3 +11,45 @@ app.get("/api/v1/health", (req, res) => {
         timestamp: new Date().toISOString()
     });
 });
+
+// adicionei lista UF
+app.get("/api/v1/cidades/:sigla_uf", async (req, res) => {
+    const { sigla_uf } = req.params;
+    const limite = parseInt(req.query.limite) || 10;
+
+    if (sigla_uf.length !== 2) {
+        return res.status(400).json({
+            erro: true,
+            codigo: "SIGLA_UF_INVALIDA",
+            mensagem: "A sigla do estado deve conter exatamente 2 letras",
+            sigla_uf_informada: sigla_uf
+        });
+    }
+
+    try {
+        const resposta = await axios.get(
+            `https://brasilapi.com.br/api/ibge/municipios/v1/${sigla_uf}`
+        );
+
+        const cidades = resposta.data
+            .slice(0, limite)
+            .map(cidade => ({
+                nome: cidade.nome
+            }));
+
+        res.json({
+            uf: sigla_uf.toUpperCase(),
+            quantidade_retornada: cidades.length,
+            cidades,
+            consultado_em: new Date().toISOString()
+        });
+
+    } catch (error) {
+        res.status(404).json({
+            erro: true,
+            codigo: "UF_NAO_ENCONTRADA",
+            mensagem: "Estado com a sigla informada não foi encontrado",
+            sigla_uf_informada: sigla_uf
+        });
+    }
+});
