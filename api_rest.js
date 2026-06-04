@@ -48,7 +48,7 @@ app.get("/api/v1/cidades/:sigla_uf", async (req, res) => {
         res.status(404).json({
             erro: true,
             codigo: "UF_NAO_ENCONTRADA",
-            mensagem: "Estado com a sigla informada não foi encontrado",
+            mensagem: "Nenhuma cidade encontrada com o nome informado",
             sigla_uf_informada: sigla_uf
         });
     }
@@ -120,7 +120,8 @@ app.get("/api/v1/clima/:nome_cidade", async (req, res) => {
         res.status(503).json({
             erro: true,
             codigo: "SERVICO_EXTERNO_INDISPONIVEL",
-            mensagem: "Erro ao consultar serviço externo"
+            mensagem: "Erro ao consultar serviço externo",
+            servico: "geocoding"
         });
     }
 });
