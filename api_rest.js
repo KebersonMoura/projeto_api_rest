@@ -53,3 +53,15 @@ app.get("/api/v1/cidades/:sigla_uf", async (req, res) => {
         });
     }
 });
+
+// Consultar clima
+app.get("/api/v1/clima/:nome_cidade", async (req, res) => {
+    const { nome_cidade } 
+
+    if (nome_cidade.length < 2) {
+        return res.status(400).json({
+            codigo: "NOME_INVALIDO",
+            mensagem: "O nome da cidade deve conter pelo menos 2 caracteres",
+            nome_informado: nome_cidade
+        });
+    }
