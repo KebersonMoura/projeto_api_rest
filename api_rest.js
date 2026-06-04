@@ -56,12 +56,71 @@ app.get("/api/v1/cidades/:sigla_uf", async (req, res) => {
 
 // Consultar clima
 app.get("/api/v1/clima/:nome_cidade", async (req, res) => {
-    const { nome_cidade } 
+    const { nome_cidade } = req.params;
 
     if (nome_cidade.length < 2) {
         return res.status(400).json({
+            erro: true,
             codigo: "NOME_INVALIDO",
             mensagem: "O nome da cidade deve conter pelo menos 2 caracteres",
             nome_informado: nome_cidade
         });
     }
+
+    try {
+        // Buscar coordenadas
+        const geo = await axios.get(
+            `https://geocoding-api.open-meteo.com/v1/search`,
+            {
+                params: {
+                    name: nome_cidade,
+                    count: 1,
+                    language: "pt",
+                    format: "json"
+                }
+            }
+        );
+
+        if (!geo.data.results || geo.data.results.length === 0) {
+            return res.status(404).json({
+                erro: true,
+                codigo: "CIDADE_NAO_ENCONTRADA",
+                mensagem: "Nenhuma cidade encontrada com o nome informado",
+                nome_informado: nome_cidade
+            });
+        }
+
+        const cidade = geo.data.results[0];
+
+        // Buscar clima
+        const clima = await axios.get(
+            "https://api.open-meteo.com/v1/forecast",
+            {
+                params: {
+                    latitude: cidade.latitude,
+                    longitude: cidade.longitude,
+                    current_weather: true
+                }
+            }
+        );
+
+        res.json({
+            nome: cidade.name,
+            estado: cidade.admin1 || "",
+            clima: {
+                temperatura: clima.data.current_weather.temperature,
+                unidades: {
+                    temperatura: "°C"
+                }
+            },
+            consultado_em: new Date().toISOString()
+        });
+
+    } catch (error) {
+        res.status(503).json({
+            erro: true,
+            codigo: "SERVICO_EXTERNO_INDISPONIVEL",
+            mensagem: "Erro ao consultar serviço externo"
+        });
+    }
+});
