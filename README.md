@@ -34,6 +34,8 @@ Instale as dependencias:
 
 ```bash
 npm install
+npm install axios
+npm install express
 ```
 
 ## Como executar
