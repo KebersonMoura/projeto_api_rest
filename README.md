@@ -41,6 +41,10 @@ npm install express
 ## Como executar
 
 ```bash
+cd src
+```
+
+```bash
 node api_rest.js
 ```
 
